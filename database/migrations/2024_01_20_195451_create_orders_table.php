@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('unique_code')->unique();
             $table->decimal('total_price', 8, 2);
-            $table->enum('status', ['pendiente', 'entregada']);
+            $table->enum('status', ['pendiente', 'entregada', 'anulada'])->default('pendiente');
             $table->unsignedBigInteger('customer_id');
             $table->foreign('customer_id')->references('id')->on('customers');
             $table->timestamps();
