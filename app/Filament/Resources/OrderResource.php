@@ -67,6 +67,7 @@ class OrderResource extends Resource
                     ->columns([
                         'sm' => 8,
                     ])
+                    ->minItems(1)
                     ->schema([
                         Select::make('product_id')
                             ->live()
@@ -98,7 +99,17 @@ class OrderResource extends Resource
                             ->minValue(1)
                             ->live()
                             ->afterStateUpdated(function (Get $get, Set $set, ?string $old, ?string $state) {
-                                $set('total', $get('quantity') * $get('price'));
+                                if (is_numeric($get('quantity')) && is_numeric($get('price'))) {
+                                    $set('total', $get('quantity') * $get('price'));
+                                }
+                            })
+                            ->afterStateUpdated(function (Get $get, Set $set, ?string $old, ?string $state) {
+                                self::updateTotalPrice($get, $set);
+
+                                // $new_value = $get('../../total_price') + $get('total');
+                                // $selectedProducts = collect($get('../../orderProducts'));
+                                // dd($selectedProducts);
+                                // $set('../../total_price', $new_value);
                             }),
                         TextInput::make('total')
                             ->columnSpan([
@@ -106,8 +117,15 @@ class OrderResource extends Resource
                             ])
                             ->disabled()
                             ->numeric(),
-                        // ...
                     ])
+                    ->columnSpan('full'),
+
+                TextInput::make('calculated_price')
+                    ->label('Precio Calculado')
+                    ->disabled()
+                    ->live()
+                    ->hidden(fn (Get $get): bool => !$get('customer_id'))
+                    ->numeric()
                     ->columnSpan('full'),
 
                 TextInput::make('total_price')
@@ -188,5 +206,16 @@ class OrderResource extends Resource
             'create' => Pages\CreateOrder::route('/create'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
+    }
+
+    public static function updateTotalPrice(Get $get, Set $set): void
+    {
+        $selectedProducts = collect($get('../../orderProducts'));
+        $total = 0;
+        foreach ($selectedProducts as $selectedProduct) {
+            $total += $selectedProduct['total'];
+        }
+        $set('../../calculated_price', $total);
+        $set('../../total_price', $total);
     }
 }
