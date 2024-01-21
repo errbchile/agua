@@ -13,6 +13,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Support\Str;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction;
@@ -29,21 +31,22 @@ class OrderResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('unique_code')
+                TextInput::make('unique_code')
                     ->required()
                     ->readonly()
-                    ->default(Str::uuid()->toString()),
+                    ->default(Str::uuid()->toString())
+                    ->columnSpan('full'),
 
-                Forms\Components\Select::make('customer_id')
+                Select::make('customer_id')
                     ->relationship(name: 'customer', titleAttribute: 'full_name')
                     ->searchable()
                     ->required(),
 
-                Forms\Components\TextInput::make('total_price')
+                TextInput::make('total_price')
                     ->required()
                     ->numeric(),
 
-                Forms\Components\Select::make('status')
+                Select::make('status')
                     ->required()
                     ->options([
                         'pending' => 'Pendiente',
@@ -59,16 +62,16 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('customer.full_name')
+                TextColumn::make('customer.full_name')
                     ->label('Customer')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('unique_code')
+                TextColumn::make('unique_code')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('total_price')
+                TextColumn::make('total_price')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'pending' => 'warning',
@@ -76,11 +79,11 @@ class OrderResource extends Resource
                         'finished' => 'success',
                     })
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
