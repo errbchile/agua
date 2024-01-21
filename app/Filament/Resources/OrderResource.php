@@ -95,7 +95,7 @@ class OrderResource extends Resource
                             ->columnSpan([
                                 'sm' => 2,
                             ])
-                            ->required()
+                            ->disabled()
                             ->numeric(),
                         // ...
                     ])
