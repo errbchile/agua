@@ -42,6 +42,7 @@ class OrderResource extends Resource
                     ->columnSpan('full'),
 
                 Select::make('customer_id')
+                    ->live()
                     ->relationship(name: 'customer', titleAttribute: 'full_name')
                     ->searchable()
                     ->required(),
@@ -57,6 +58,8 @@ class OrderResource extends Resource
                     ->default('pending'),
 
                 Repeater::make('orderProducts')
+                    ->live()
+                    ->hidden(fn (Get $get): bool => ! $get('customer_id'))
                     ->label('Products')
                     ->relationship()
                     ->columns([
