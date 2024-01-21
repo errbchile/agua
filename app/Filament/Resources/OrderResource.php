@@ -20,6 +20,10 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Set;
+use Filament\Forms\Get;
+use App\Models\Product;
 
 class OrderResource extends Resource
 {
@@ -42,10 +46,6 @@ class OrderResource extends Resource
                     ->searchable()
                     ->required(),
 
-                TextInput::make('total_price')
-                    ->required()
-                    ->numeric(),
-
                 Select::make('status')
                     ->required()
                     ->options([
@@ -55,6 +55,56 @@ class OrderResource extends Resource
                     ])
                     ->native(false)
                     ->default('pending'),
+
+                Repeater::make('orderProducts')
+                    ->label('Products')
+                    ->relationship()
+                    ->columns([
+                        'sm' => 8,
+                    ])
+                    ->schema([
+                        Select::make('product_id')
+                            ->columnSpan([
+                                'sm' => 2,
+                            ])
+                            ->relationship('product', 'name')
+                            ->live()
+                            ->afterStateUpdated(fn (Set $set, ?string $state) => $set('price', Product::where('id', $state)->pluck('price')->first()))
+                            ->afterStateUpdated(function (Get $get, Set $set, ?string $old, ?string $state) {
+                                $set('total', $get('quantity') * $get('price'));
+                            })
+                            ->required(),
+                        TextInput::make('price')  
+                            ->columnSpan([
+                                'sm' => 2,
+                            ])  
+                            ->label('Precio unitario')
+                            ->disabled(),
+                        TextInput::make('quantity')  
+                            ->columnSpan([
+                                'sm' => 2,
+                            ])  
+                            ->required()
+                            ->numeric()
+                            ->minValue(1)
+                            ->live()
+                            ->afterStateUpdated(function (Get $get, Set $set, ?string $old, ?string $state) {
+                                $set('total', $get('quantity') * $get('price'));
+                            }),
+                        TextInput::make('total')    
+                            ->columnSpan([
+                                'sm' => 2,
+                            ])
+                            ->required()
+                            ->numeric(),
+                        // ...
+                    ])
+                    ->columnSpan('full'),
+
+                TextInput::make('total_price')
+                    ->required()
+                    ->numeric()
+                    ->columnSpan('full'),
             ]);
     }
 
