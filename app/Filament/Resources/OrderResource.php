@@ -24,7 +24,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Set;
 use Filament\Forms\Get;
 use App\Models\Product;
-use Illuminate\Http\Request;
+use Filament\Tables\Filters\Filter;
 
 class OrderResource extends Resource
 {
@@ -150,7 +150,15 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Filter::make('pending')
+                    ->query(fn (Builder $query): Builder => $query->where('status', 'pending')),
+
+                Filter::make('rejected')
+                    ->query(fn (Builder $query): Builder => $query->where('status', 'rejected')),
+
+                Filter::make('finished')
+                    ->query(fn (Builder $query): Builder => $query->where('status', 'finished')),
+
             ])
             ->actions([
                 ActionGroup::make([
