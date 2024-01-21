@@ -24,6 +24,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Set;
 use Filament\Forms\Get;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
 class OrderResource extends Resource
 {
@@ -45,7 +46,8 @@ class OrderResource extends Resource
                     ->live()
                     ->relationship(name: 'customer', titleAttribute: 'full_name')
                     ->searchable()
-                    ->required(),
+                    ->required()
+                    ->preload(),
 
                 Select::make('status')
                     ->required()
@@ -59,7 +61,7 @@ class OrderResource extends Resource
 
                 Repeater::make('orderProducts')
                     ->live()
-                    ->hidden(fn (Get $get): bool => ! $get('customer_id'))
+                    ->hidden(fn (Get $get): bool => !$get('customer_id'))
                     ->label('Products')
                     ->relationship()
                     ->columns([
@@ -67,26 +69,30 @@ class OrderResource extends Resource
                     ])
                     ->schema([
                         Select::make('product_id')
+                            ->live()
                             ->columnSpan([
                                 'sm' => 2,
                             ])
-                            ->relationship('product', 'name')
-                            ->live()
+                            ->relationship(
+                                'product',
+                                'name',
+                                modifyQueryUsing: fn (Builder $query, Get $get) => $query->where('customer_id', $get('../../customer_id')),
+                            )
                             ->afterStateUpdated(fn (Set $set, ?string $state) => $set('price', Product::where('id', $state)->pluck('price')->first()))
                             ->afterStateUpdated(function (Get $get, Set $set, ?string $old, ?string $state) {
                                 $set('total', $get('quantity') * $get('price'));
                             })
                             ->required(),
-                        TextInput::make('price')  
+                        TextInput::make('price')
                             ->columnSpan([
                                 'sm' => 2,
-                            ])  
+                            ])
                             ->label('Precio unitario')
                             ->disabled(),
-                        TextInput::make('quantity')  
+                        TextInput::make('quantity')
                             ->columnSpan([
                                 'sm' => 2,
-                            ])  
+                            ])
                             ->required()
                             ->numeric()
                             ->minValue(1)
@@ -94,7 +100,7 @@ class OrderResource extends Resource
                             ->afterStateUpdated(function (Get $get, Set $set, ?string $old, ?string $state) {
                                 $set('total', $get('quantity') * $get('price'));
                             }),
-                        TextInput::make('total')    
+                        TextInput::make('total')
                             ->columnSpan([
                                 'sm' => 2,
                             ])
@@ -105,6 +111,8 @@ class OrderResource extends Resource
                     ->columnSpan('full'),
 
                 TextInput::make('total_price')
+                    ->live()
+                    ->hidden(fn (Get $get): bool => !$get('customer_id'))
                     ->required()
                     ->numeric()
                     ->columnSpan('full'),
