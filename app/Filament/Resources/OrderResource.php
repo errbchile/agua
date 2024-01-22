@@ -26,6 +26,7 @@ use Filament\Forms\Get;
 use App\Models\Product;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Columns\SelectColumn;
+use Filament\Tables\Columns\ViewColumn;
 
 class OrderResource extends Resource
 {
@@ -162,6 +163,10 @@ class OrderResource extends Resource
                     ])
                     ->selectablePlaceholder(false)
                     ->searchable(),
+
+
+                ViewColumn::make('products')->view('tables.columns.products'),
+
 
                 TextColumn::make('created_at')
                     ->dateTime()
