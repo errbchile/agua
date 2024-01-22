@@ -27,6 +27,7 @@ use App\Models\Product;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\ViewColumn;
+use Filament\Tables\Columns\Summarizers\Sum;
 
 class OrderResource extends Resource
 {
@@ -154,7 +155,17 @@ class OrderResource extends Resource
                         decimalSeparator: ',',
                         thousandsSeparator: '.',
                     )
-                    ->sortable(),
+                    ->sortable()
+                    ->summarize(
+                        Sum::make()
+                            ->numeric(
+                                decimalPlaces: 0,
+                                decimalSeparator: ',',
+                                thousandsSeparator: '.',
+                            )
+                            ->label('TOTAL')
+                    ),
+
                 SelectColumn::make('status')
                     ->options([
                         'pending' => 'Pending',
