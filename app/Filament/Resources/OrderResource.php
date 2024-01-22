@@ -25,6 +25,7 @@ use Filament\Forms\Set;
 use Filament\Forms\Get;
 use App\Models\Product;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Columns\SelectColumn;
 
 class OrderResource extends Resource
 {
@@ -146,18 +147,24 @@ class OrderResource extends Resource
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('unique_code')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 TextColumn::make('total_price')
-                    ->numeric()
+                    ->numeric(
+                        decimalPlaces: 0,
+                        decimalSeparator: ',',
+                        thousandsSeparator: '.',
+                    )
                     ->sortable(),
-                TextColumn::make('status')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'pending' => 'warning',
-                        'rejected' => 'gray',
-                        'finished' => 'success',
-                    })
+                SelectColumn::make('status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'rejected' => 'Rejected',
+                        'finished' => 'Finished',
+                    ])
+                    ->selectablePlaceholder(false)
                     ->searchable(),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
