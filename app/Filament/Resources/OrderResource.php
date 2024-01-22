@@ -106,11 +106,6 @@ class OrderResource extends Resource
                             })
                             ->afterStateUpdated(function (Get $get, Set $set, ?string $old, ?string $state) {
                                 self::updateTotalPrice($get, $set);
-
-                                // $new_value = $get('../../total_price') + $get('total');
-                                // $selectedProducts = collect($get('../../orderProducts'));
-                                // dd($selectedProducts);
-                                // $set('../../total_price', $new_value);
                             }),
                         TextInput::make('total')
                             ->columnSpan([
@@ -142,6 +137,9 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('index')
+                    ->label('N°')
+                    ->rowIndex(),
                 TextColumn::make('customer.full_name')
                     ->label('Customer')
                     ->numeric()
@@ -176,13 +174,16 @@ class OrderResource extends Resource
             ])
             ->filters([
                 Filter::make('pending')
-                    ->query(fn (Builder $query): Builder => $query->where('status', 'pending')),
+                    ->query(fn (Builder $query): Builder => $query->where('status', 'pending'))
+                    ->toggle(),
 
                 Filter::make('rejected')
-                    ->query(fn (Builder $query): Builder => $query->where('status', 'rejected')),
+                    ->query(fn (Builder $query): Builder => $query->where('status', 'rejected'))
+                    ->toggle(),
 
                 Filter::make('finished')
-                    ->query(fn (Builder $query): Builder => $query->where('status', 'finished')),
+                    ->query(fn (Builder $query): Builder => $query->where('status', 'finished'))
+                    ->toggle(),
 
             ])
             ->actions([

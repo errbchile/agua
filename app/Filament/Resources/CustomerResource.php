@@ -12,6 +12,12 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\Summarizers\Count;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 
 class CustomerResource extends Resource
 {
@@ -45,26 +51,38 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('full_name')
+                TextColumn::make('index')
+                    ->label('N°')
+                    ->rowIndex(),
+                TextColumn::make('full_name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('address')
+                TextColumn::make('address')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('phone')
+                TextColumn::make('phone')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('orders_count')
+                    ->label('Orders finished')
+                    ->counts([
+                        'orders' => fn (Builder $query) => $query->where('status', 'finished'),
+                    ]),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
