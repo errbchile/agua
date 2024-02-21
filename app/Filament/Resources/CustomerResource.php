@@ -76,6 +76,7 @@ class CustomerResource extends Resource
             ])
             ->filters([
                 //
+                //
             ])
             ->actions([
                 ActionGroup::make([
